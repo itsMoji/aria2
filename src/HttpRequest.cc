@@ -68,7 +68,7 @@ HttpRequest::HttpRequest()
       acceptMetalink_(false),
       noCache_(true),
       acceptGzip_(false),
-      noWantDigest_(false)
+      noWantDigest_(true)
 {
 }
 
