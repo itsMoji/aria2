@@ -142,7 +142,7 @@
     "                              choice. It allocates large(few GiB) files\n" \
     "                              almost instantly. Don't use 'falloc' with legacy\n" \
     "                              file systems such as ext3 and FAT32 because it\n" \
-    "                              takes almost same time as 'prealloc' and it\n" \
+    "                              takes almost the same time as 'prealloc' and it\n" \
     "                              blocks aria2 entirely until allocation finishes.\n" \
     "                              'falloc' may not be available if your system\n" \
     "                              doesn't have posix_fallocate() function.\n" \
@@ -539,6 +539,9 @@
 #define TEXT_USE_HEAD                                                   \
   _(" --use-head[=true|false]      Use HEAD method for the first request to the HTTP\n" \
     "                              server.")
+#define TEXT_NO_WANT_DIGEST_HEADER                                      \
+  _(" --no-want-digest-header[=true|false] Whether to disable Want-Digest header \n" \
+    "                              when doing requests.")
 #define TEXT_CONTENT_DISPOSITION_DEFAULT_UTF8                          \
   _(" --content-disposition-default-utf8[=true|false] Handle quoted string in\n" \
     "                              Content-Disposition header as UTF-8 instead of\n" \
@@ -723,9 +726,9 @@
 #define TEXT_DHT_MESSAGE_TIMEOUT                \
   _(" --dht-message-timeout=SEC    Set timeout in seconds.")
 #define TEXT_HTTP_ACCEPT_GZIP                   \
-  _(" --http-accept-gzip[=true|false] Send 'Accept: deflate, gzip' request header\n" \
-    "                              and inflate response if remote server responds\n" \
-    "                              with 'Content-Encoding: gzip' or\n"  \
+  _(" --http-accept-gzip[=true|false] Send 'Accept-Encoding: deflate, gzip' request\n" \
+    "                              header and inflate response if remote server\n" \
+    "                              responds with 'Content-Encoding: gzip' or\n"  \
     "                              'Content-Encoding: deflate'.")
 #define TEXT_SAVE_SESSION                       \
   _(" --save-session=FILE          Save error/unfinished downloads to FILE on exit.\n" \

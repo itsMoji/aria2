@@ -433,7 +433,7 @@ HTTP Specific Options
 
 .. option:: --http-accept-gzip [true|false]
 
-  Send ``Accept: deflate, gzip`` request header and inflate response if
+  Send ``Accept-Encoding: deflate, gzip`` request header and inflate response if
   remote server responds with ``Content-Encoding: gzip`` or
   ``Content-Encoding: deflate``.  Default: ``false``
 
@@ -557,6 +557,10 @@ HTTP Specific Options
   Use HEAD method for the first request to the HTTP server.
   Default: ``false``
 
+.. option:: --no-want-digest-header [true|false]
+
+  Whether to disable Want-Digest header when doing requests.
+  Default: ``false``
 
 .. option:: -U, --user-agent=<USER_AGENT>
 
@@ -1359,7 +1363,7 @@ Advanced Options
   your best choice. It allocates large(few GiB)
   files almost instantly. Don't use ``falloc`` with
   legacy file systems such as ext3 and FAT32 because it takes
-  almost same time as ``prealloc`` and it blocks aria2
+  almost the same time as ``prealloc`` and it blocks aria2
   entirely until allocation finishes. ``falloc`` may
   not be available if your system doesn't have
   :manpage:`posix_fallocate(3)` function.

@@ -407,7 +407,7 @@ Opções Específicas de HTTP e HTTPS
 
 .. option:: --http-accept-gzip [true|false]
 
-  Envia cabeçalho requisição ``Accept: deflate, gzip`` e faz (inflate) se
+  Envia cabeçalho requisição ``Accept-Encoding: deflate, gzip`` e faz (inflate) se
   o servidor remoto responder com  ``Content-Encoding: gzip`` ou 
   ``Content-Encoding: deflate``.  Padrão: ``false``
 
@@ -1206,7 +1206,7 @@ Opções Avançadas
   your best choice. It allocates large(few GiB)
   files almost instantly. Don't use ``falloc`` with
   legacy file systems such as ext3 and FAT32 because it takes
-  almost same time as ``prealloc`` and it blocks aria2
+  almost the same time as ``prealloc`` and it blocks aria2
   entirely until allocation finishes. ``falloc`` may
   not be available if your system doesn't have
   :manpage:`posix_fallocate(3)` function.
