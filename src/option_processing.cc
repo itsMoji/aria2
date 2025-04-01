@@ -103,10 +103,10 @@ int levenshtein(const char* a, const char* b, int swapcost, int subcost,
   int blen = strlen(b);
   std::vector<std::vector<int>> dp(3, std::vector<int>(blen + 1));
   for (int i = 0; i <= blen; ++i) {
-    dp[1][i] = i;
+    dp[1][i] = i * addcost;
   }
   for (int i = 1; i <= alen; ++i) {
-    dp[0][0] = i;
+    dp[0][0] = i * delcost;
     for (int j = 1; j <= blen; ++j) {
       dp[0][j] = dp[1][j - 1] + (a[i - 1] == b[j - 1] ? 0 : subcost);
       if (i >= 2 && j >= 2 && a[i - 1] != b[j - 1] && a[i - 2] == b[j - 1] &&
@@ -148,7 +148,7 @@ void showCandidates(const std::string& unknownOption,
       continue;
     }
     // cost values are borrowed from git, help.c.
-    int sim = levenshtein(optstr, pref->k, 0, 2, 1, 4);
+    int sim = levenshtein(optstr, pref->k, 0, 2, 1, 3);
     cands.push_back(std::make_pair(sim, pref));
   }
   if (cands.empty()) {
@@ -275,7 +275,7 @@ error_code::Value option_processing(Option& op, bool standalone,
     // we must clear eof bit and seek to the beginning of the buffer.
     cmdstream.clear();
     cmdstream.seekg(0, std::ios::beg);
-    // finaly let's parse and store command-iine options.
+    // finally let's parse and store command-line options.
     op.setParent(confOption);
     oparser->parse(op, cmdstream);
     oparser->parse(op, options);

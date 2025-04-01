@@ -6,19 +6,27 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-11]
+        os: [ubuntu-22.04, macos-14]
         compiler: [gcc, clang]
+        crypto: [openssl, gnutls]
+        bittorrent: [with-bt, without-bt]
+        exclude:
+        - os: macos-14
+          crypto: gnutls
+        - crypto: openssl
+          bittorrent: without-bt
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Linux setup
       if: runner.os == 'Linux'
       run: |
+        sudo apt-get update
         sudo apt-get install \
-          g++-11 \
-          clang-12 \
+          g++-12 \
+          clang-15 \
           autoconf \
           automake \
           autotools-dev \
@@ -26,6 +34,7 @@ jobs:
           libtool \
           pkg-config \
           libssl-dev \
+          libgnutls28-dev \
           libc-ares-dev \
           zlib1g-dev \
           libsqlite3-dev \
@@ -39,8 +48,8 @@ jobs:
     - name: Setup clang (Linux)
       if: runner.os == 'Linux' && matrix.compiler == 'clang'
       run: |
-        echo 'CC=clang-12' >> $GITHUB_ENV
-        echo 'CXX=clang++-12' >> $GITHUB_ENV
+        echo 'CC=clang-15' >> $GITHUB_ENV
+        echo 'CXX=clang++-15' >> $GITHUB_ENV
     - name: Setup clang (MacOS)
       if: runner.os == 'macOS' && matrix.compiler == 'clang'
       run: |
@@ -49,8 +58,8 @@ jobs:
     - name: Setup gcc (Linux)
       if: runner.os == 'Linux' && matrix.compiler == 'gcc'
       run: |
-        echo 'CC=gcc-11' >> $GITHUB_ENV
-        echo 'CXX=g++-11' >> $GITHUB_ENV
+        echo 'CC=gcc-12' >> $GITHUB_ENV
+        echo 'CXX=g++-12' >> $GITHUB_ENV
     - name: Setup gcc (MacOS)
       if: runner.os == 'macOS' && matrix.compiler == 'gcc'
       run: |
@@ -59,18 +68,35 @@ jobs:
     - name: Libtool
       run: |
         autoreconf -i
-    - name: Configure autotools (Linux)
-      if: runner.os == 'Linux'
+    - name: Setup compiler flags
       run: |
-        ./configure \
-          CPPFLAGS="-fsanitize=address" LDFLAGS="-fsanitize=address"
+        asanflags="-fsanitize=address,undefined -fno-sanitize-recover=undefined"
+
+        CPPFLAGS="$asanflags -g3"
+        LDFLAGS="$asanflags"
+
+        echo 'CPPFLAGS='"$CPPFLAGS" >> $GITHUB_ENV
+        echo 'LDFLAGS='"$LDFLAGS" >> $GITHUB_ENV
+    - name: Disable BitTorrent
+      if: matrix.bittorrent == 'without-bt'
+      run: |
+        FEATURE_FLAGS="$FEATURE_FLAGS --disable-bittorrent"
+
+        echo 'FEATURE_FLAGS='"$FEATURE_FLAGS" >> $GITHUB_ENV
+    - name: Configure autotools (Linux, gnutls)
+      if: runner.os == 'Linux' && matrix.crypto == 'gnutls'
+      run: |
+        ./configure --with-gnutls --without-openssl $FEATURE_FLAGS
+    - name: Configure autotools (Linux, openssl)
+      if: runner.os == 'Linux' && matrix.crypto == 'openssl'
+      run: |
+        ./configure --without-gnutls --with-openssl $FEATURE_FLAGS
     - name: Configure autotools (macOS)
       if: runner.os == 'macOS'
       run: |
         ./configure \
           --without-openssl --without-gnutls --with-appletls \
-          --disable-nls \
-          CPPFLAGS="-fsanitize=address" LDFLAGS="-fsanitize=address"
+          --disable-nls
     - name: Build aria2
       run: |
         make -j"$(nproc 2> /dev/null || sysctl -n hw.ncpu)" check

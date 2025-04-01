@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 #
 AC_PREREQ([2.67])
-AC_INIT([aria2],[1.36.0],[https://github.com/aria2/aria2/issues],[aria2],[https://aria2.github.io/])
+AC_INIT([aria2],[1.37.0],[https://github.com/aria2/aria2/issues],[aria2],[https://aria2.github.io/])
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -39,7 +39,7 @@ case "$host" in
     # available from <time.h> even without (un)helpful interference
     # from <pthread.h>, and also defines __USE_MINGW_ANSI_STDIO.
     EXTRACPPFLAGS="$EXTRACPPFLAGS -D_POSIX_C_SOURCE=1"
-    # Build with ASLR (dynamicbase) and NX compatiblity (nxcompat)
+    # Build with ASLR (dynamicbase) and NX compatibility (nxcompat)
     # Enable pie once upstream/binutils gets fixed to produce correct
     # binaries with it.
     EXTRALDFLAGS="$EXTRALDFLAGS -Wl,--dynamicbase -Wl,--nxcompat"
@@ -141,7 +141,7 @@ PKG_PROG_PKG_CONFIG([0.20])
 save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS=
 
-AX_CXX_COMPILE_STDCXX_11([noext], [mandatory])
+AX_CXX_COMPILE_STDCXX([11], [], [mandatory])
 
 CXX1XCXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$save_CXXFLAGS"
@@ -489,6 +489,10 @@ if test "x$with_libssh2" = "xyes"; then
   PKG_CHECK_MODULES([LIBSSH2], [libssh2], [have_libssh2=yes], [have_libssh2=no])
   if test "x$have_libssh2" = "xyes"; then
     AC_DEFINE([HAVE_LIBSSH2], [1], [Define to 1 if you have libssh2.])
+
+    if test "x$ARIA2_STATIC" = "xyes"; then
+      LIBSSH2_CFLAGS="-DLIBSSH2_API= $LIBSSH2_CFLAGS"
+    fi
   else
     AC_MSG_WARN([$LIBSSH2_PKG_ERRORS])
     if test "x$with_libssh2_requested" = "xyes"; then
@@ -499,18 +503,10 @@ fi
 
 have_libcares=no
 if test "x$with_libcares" = "xyes"; then
-  PKG_CHECK_MODULES([LIBCARES], [libcares >= 1.7.0], [have_libcares=yes],
+  PKG_CHECK_MODULES([LIBCARES], [libcares >= 1.16.0], [have_libcares=yes],
                     [have_libcares=no])
   if test "x$have_libcares" = "xyes"; then
     AC_DEFINE([HAVE_LIBCARES], [1], [Define to 1 if you have libcares.])
-    save_LIBS=$LIBS
-    save_CPPFLAGS=$CPPFLAGS
-    LIBS="$LIBCARES_LIBS $LIBS"
-    CPPFLAGS="$LIBCARES_CFLAGS $CPPFLAGS"
-    AC_CHECK_TYPES([ares_addr_node], [], [], [[#include <ares.h>]])
-    AC_CHECK_FUNCS([ares_set_servers])
-    LIBS=$save_LIBS
-    CPPFLAGS=$save_CPPFLAGS
 
     # -DCARES_STATICLIB is appended by pkg-config file libcares.pc
   else
@@ -733,7 +729,7 @@ fi
 
 # Checks for library functions.
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18])
+AM_GNU_GETTEXT_VERSION([0.19])
 AC_FUNC_ERROR_AT_LINE
 AC_PROG_GCC_TRADITIONAL
 
@@ -745,7 +741,7 @@ AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_FUNC_FORK
 AC_FUNC_STRTOD
-# Don't use AC_FUNC_MMAP becaue it fails on some platforms (e.g.,
+# Don't use AC_FUNC_MMAP because it fails on some platforms (e.g.,
 # OpenWRT) which have mmap and it works in the way we use in aria2.
 # Instead use mmap in AC_CHECK_FUNCS list.
 AC_CHECK_FUNCS([__argz_count \
@@ -930,17 +926,9 @@ case "$host" in
     ;;
 esac
 
-case "$host" in
-  *android*)
-    # timegm is not declared with Android NDK r12b
-    AM_CONDITIONAL([HAVE_TIMEGM], false)
-    ;;
-  *)
-    AC_CHECK_FUNCS([timegm],
-        [AM_CONDITIONAL([HAVE_TIMEGM], true)],
-        [AM_CONDITIONAL([HAVE_TIMEGM], false)])
-    ;;
-esac
+AC_CHECK_FUNCS([timegm],
+    [AM_CONDITIONAL([HAVE_TIMEGM], true)],
+    [AM_CONDITIONAL([HAVE_TIMEGM], false)])
 
 AC_CHECK_FUNCS([port_associate], [have_port_associate=yes])
 AM_CONDITIONAL([HAVE_PORT_ASSOCIATE], [test "x$have_port_associate" = "xyes"])
